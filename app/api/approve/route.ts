@@ -32,6 +32,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (row.urgency === 'same_day') {
+      if (body?.acknowledgedSameDayFee !== true) {
+        return NextResponse.json(
+          { error: 'You must acknowledge the same day variation fee before approving.' },
+          { status: 400 }
+        );
+      }
+    }
+
     const now = new Date().toISOString();
     const { error: updateError } = await getSupabaseAdmin()
       .from('variations')
