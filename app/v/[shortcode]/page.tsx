@@ -4,6 +4,7 @@ import { ClientView } from './ClientView';
 import type { Variation, VariationImage, Urgency } from '@/lib/types';
 
 const URGENCY_LABELS: Record<Urgency, string> = {
+  same_day: 'Same day',
   low: 'Low',
   medium: 'Medium',
   high: 'High',

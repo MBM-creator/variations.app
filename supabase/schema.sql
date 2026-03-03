@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS variations (
   site_address text NOT NULL,
   client_email text NOT NULL,
   description text NOT NULL,
-  urgency text NOT NULL CHECK (urgency IN ('low', 'medium', 'high', 'cannot_proceed')),
+  urgency text NOT NULL CHECK (urgency IN ('same_day', 'low', 'medium', 'high', 'cannot_proceed')),
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined', 'edited')),
   submitted_at timestamptz NOT NULL DEFAULT now(),
   submitted_ip text,
@@ -42,8 +42,34 @@ ALTER TABLE variations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE variation_images ENABLE ROW LEVEL SECURITY;
 
 -- Policy: no direct anon access to tables (all access via API with server-side Supabase client)
+DROP POLICY IF EXISTS "No direct anon access variations" ON variations;
 CREATE POLICY "No direct anon access variations" ON variations FOR ALL USING (false);
+DROP POLICY IF EXISTS "No direct anon access variation_images" ON variation_images;
 CREATE POLICY "No direct anon access variation_images" ON variation_images FOR ALL USING (false);
+
+-- Table: variation_drafts (for one-photo-at-a-time upload flow)
+CREATE TABLE IF NOT EXISTS variation_drafts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Table: variation_draft_files (paths under drafts/{draftId}/ in storage)
+CREATE TABLE IF NOT EXISTS variation_draft_files (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  draft_id uuid NOT NULL REFERENCES variation_drafts(id) ON DELETE CASCADE,
+  path text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_variation_draft_files_draft_id ON variation_draft_files(draft_id);
+
+ALTER TABLE variation_drafts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE variation_draft_files ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "No direct anon access variation_drafts" ON variation_drafts;
+CREATE POLICY "No direct anon access variation_drafts" ON variation_drafts FOR ALL USING (false);
+DROP POLICY IF EXISTS "No direct anon access variation_draft_files" ON variation_draft_files;
+CREATE POLICY "No direct anon access variation_draft_files" ON variation_draft_files FOR ALL USING (false);
 
 -- Storage: create bucket via Dashboard or run:
 -- Storage → New bucket → Name: variations, Private: ON
