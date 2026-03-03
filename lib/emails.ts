@@ -14,10 +14,11 @@ const FROM_EMAIL = process.env.FROM_EMAIL ?? 'Variations <noreply@madebymobbs.co
 const STEVE_EMAIL = process.env.STEVE_EMAIL ?? 'steve@madebymobbs.com.au';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://variations.madebymobbs.com.au';
 
-export type Urgency = 'low' | 'medium' | 'high' | 'cannot_proceed';
+export type Urgency = 'same_day' | 'low' | 'medium' | 'high' | 'cannot_proceed';
 
 function urgencyLabel(u: Urgency): string {
   const map: Record<Urgency, string> = {
+    same_day: 'Same day',
     low: 'Low',
     medium: 'Medium',
     high: 'High',
@@ -47,6 +48,9 @@ export async function sendClientVariationEmail(params: {
   <p><strong>Description:</strong></p>
   <p>${description.replace(/\n/g, '<br>')}</p>
   <p><strong>Urgency:</strong> ${urgencyLabel(urgency)}</p>
+${urgency === 'same_day' ? `
+  <p style="margin: 1em 0;"><input type="checkbox" disabled style="vertical-align: middle; margin-right: 6px;"> I acknowledge this variation requires additional or different materials to allow work to proceed and will incur a same day variation fee of $500. This fee will be in addition to any additional materials or labour required to complete the variation.</p>
+` : ''}
   <p>Please approve, request edits, or decline via the secure link below.</p>
   <p><a href="${viewLink}" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View & respond</a></p>
   <p style="color: #666; font-size: 12px;">Link: ${viewLink}</p>
@@ -74,13 +78,13 @@ export async function sendSteveApprovedEmail(params: {
   adminLink: string;
   imageCount: number;
 }) {
-  const subject = `Variation Approved – ${params.siteName}`;
+  const subject = `Variation Request Approved – ${params.siteName}`;
   const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>${subject}</title></head>
 <body style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <h2 style="color: #166534;">Variation Approved</h2>
+  <h2 style="color: #166534;">Variation Request Approved</h2>
   <p><strong>Site:</strong> ${params.siteName}</p>
   <p><strong>Supervisor:</strong> ${params.supervisorName}</p>
   <p><strong>Description:</strong></p>

@@ -10,7 +10,8 @@ Use this checklist so the app is ready for supervisors and clients.
 - [ ] **Run the schema**  
   - Dashboard → **SQL Editor** → New query  
   - Paste the full contents of **`supabase/schema.sql`**  
-  - Run it.
+  - Run it.  
+  - The schema includes **variation_drafts** and **variation_draft_files** for the one-photo-at-a-time upload flow; draft files are stored in the same bucket under the **drafts/{draftId}/** prefix. If you already ran an older schema, run the new schema again (it uses `CREATE TABLE IF NOT EXISTS`) or add the draft tables and RLS from `schema.sql` manually.
 - [ ] **Create storage bucket**  
   - **Storage** → **New bucket**  
   - Name: **`variations`**  

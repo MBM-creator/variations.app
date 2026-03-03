@@ -1,4 +1,4 @@
-export type Urgency = 'low' | 'medium' | 'high' | 'cannot_proceed';
+export type Urgency = 'same_day' | 'low' | 'medium' | 'high' | 'cannot_proceed';
 export type VariationStatus = 'pending' | 'approved' | 'declined' | 'edited';
 
 export interface Variation {

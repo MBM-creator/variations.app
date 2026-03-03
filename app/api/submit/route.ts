@@ -8,25 +8,25 @@ import {
   type Urgency,
 } from '@/lib/emails';
 
-const URGENCY_VALUES: Urgency[] = ['low', 'medium', 'high', 'cannot_proceed'];
+const URGENCY_VALUES: Urgency[] = ['same_day', 'low', 'medium', 'high', 'cannot_proceed'];
 const MIN_IMAGES = 1;
 const MAX_IMAGES = 10;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const formData = await request.formData();
+    const body = await request.json().catch(() => ({}));
 
-    const supervisorName = formData.get('supervisor_name') as string;
-    const siteName = formData.get('site_name') as string;
-    const siteAddress = formData.get('site_address') as string;
-    const clientEmail = formData.get('client_email') as string;
-    const description = formData.get('description') as string;
-    const urgencyRaw = formData.get('urgency') as string;
+    const draftId = body.draftId as string | undefined;
+    const supervisorName = body.supervisor_name as string | undefined;
+    const siteName = body.site_name as string | undefined;
+    const siteAddress = body.site_address as string | undefined;
+    const clientEmail = body.client_email as string | undefined;
+    const description = body.description as string | undefined;
+    const urgencyRaw = body.urgency as string | undefined;
 
     if (
+      !draftId ||
       !supervisorName?.trim() ||
       !siteName?.trim() ||
       !siteAddress?.trim() ||
@@ -44,15 +44,33 @@ export async function POST(request: NextRequest) {
       ? (urgencyRaw as Urgency)
       : 'medium';
 
-    const files = formData.getAll('photos') as File[];
-    const validFiles = files.filter(
-      (f) =>
-        f &&
-        f.size > 0 &&
-        f.size <= MAX_FILE_SIZE &&
-        ALLOWED_TYPES.includes(f.type)
-    );
-    if (validFiles.length < MIN_IMAGES || validFiles.length > MAX_IMAGES) {
+    const { data: draft, error: draftError } = await getSupabaseAdmin()
+      .from('variation_drafts')
+      .select('id')
+      .eq('id', draftId)
+      .single();
+
+    if (draftError || !draft) {
+      return NextResponse.json(
+        { error: 'Draft not found' },
+        { status: 400 }
+      );
+    }
+
+    const { data: draftFiles, error: filesError } = await getSupabaseAdmin()
+      .from('variation_draft_files')
+      .select('path')
+      .eq('draft_id', draftId)
+      .order('created_at');
+
+    if (filesError || !draftFiles?.length) {
+      return NextResponse.json(
+        { error: 'No photos found for this draft' },
+        { status: 400 }
+      );
+    }
+
+    if (draftFiles.length < MIN_IMAGES || draftFiles.length > MAX_IMAGES) {
       return NextResponse.json(
         { error: `Please upload between ${MIN_IMAGES} and ${MAX_IMAGES} images.` },
         { status: 400 }
@@ -101,26 +119,40 @@ export async function POST(request: NextRequest) {
     const prefix = `variations/${shortcode}`;
     const imagePaths: string[] = [];
 
-    for (let i = 0; i < validFiles.length; i++) {
-      const file = validFiles[i]!;
-      const ext = file.name.split('.').pop() || 'jpg';
-      const safeName = `${Date.now()}-${i}.${ext}`.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const path = `${prefix}/${safeName}`;
-      const buf = await file.arrayBuffer();
-      const { error: uploadError } = await getSupabaseAdmin().storage
+    for (let i = 0; i < draftFiles.length; i++) {
+      const draftPath = draftFiles[i]!.path;
+      const ext = draftPath.split('.').pop() || 'jpg';
+      const finalName = `${Date.now()}-${i}.${ext}`.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const finalPath = `${prefix}/${finalName}`;
+
+      const { data: blob, error: downloadError } = await getSupabaseAdmin()
+        .storage
         .from(BUCKET_VARIATIONS)
-        .upload(path, buf, {
-          contentType: file.type,
-          upsert: false,
-        });
-      if (uploadError) {
-        console.error(uploadError);
+        .download(draftPath);
+
+      if (downloadError || !blob) {
+        console.error(downloadError);
         return NextResponse.json(
-          { error: 'Failed to upload one or more images' },
+          { error: 'Failed to copy draft images' },
           { status: 500 }
         );
       }
-      imagePaths.push(path);
+
+      const { error: uploadError } = await getSupabaseAdmin().storage
+        .from(BUCKET_VARIATIONS)
+        .upload(finalPath, blob, {
+          contentType: blob.type || 'image/jpeg',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error(uploadError);
+        return NextResponse.json(
+          { error: 'Failed to save images' },
+          { status: 500 }
+        );
+      }
+      imagePaths.push(finalPath);
     }
 
     const { error: imgInsertError } = await getSupabaseAdmin()
@@ -138,6 +170,11 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    const pathsToRemove = draftFiles.map((f) => f.path);
+    await getSupabaseAdmin().storage.from(BUCKET_VARIATIONS).remove(pathsToRemove);
+    await getSupabaseAdmin().from('variation_draft_files').delete().eq('draft_id', draftId);
+    await getSupabaseAdmin().from('variation_drafts').delete().eq('id', draftId);
 
     const viewLink = getViewLink(shortcode);
     await sendClientVariationEmail({
