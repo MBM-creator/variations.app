@@ -50,6 +50,7 @@ export async function sendClientVariationEmail(params: {
   <p><strong>Urgency:</strong> ${urgencyLabel(urgency)}</p>
 ${urgency === 'same_day' ? `
   <p style="margin: 1em 0;"><input type="checkbox" disabled style="vertical-align: middle; margin-right: 6px;"> I acknowledge this variation requires additional or different materials to allow work to proceed and will incur a same day variation fee of $500. This fee will be in addition to any additional materials or labour required to complete the variation.</p>
+  <p style="margin: 0 0 1em 0; font-size: 14px; color: #666;">You will be asked to confirm this when you approve.</p>
 ` : ''}
   <p>Please approve, request edits, or decline via the secure link below.</p>
   <p><a href="${viewLink}" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View & respond</a></p>

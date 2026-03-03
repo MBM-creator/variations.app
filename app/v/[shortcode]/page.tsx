@@ -115,7 +115,7 @@ export default async function VariationViewPage({
       )}
 
       {variation.status === 'pending' && (
-        <ClientView shortcode={shortcode} />
+        <ClientView shortcode={shortcode} urgency={variation.urgency} />
       )}
 
       {variation.status !== 'pending' && (

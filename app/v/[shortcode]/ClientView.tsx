@@ -1,23 +1,41 @@
 'use client';
 
 import { useState } from 'react';
+import type { Urgency } from '@/lib/types';
 
-export function ClientView({ shortcode }: { shortcode: string }) {
+const SAME_DAY_ACK_TEXT =
+  'I acknowledge this variation requires additional or different materials to allow work to proceed and will incur a same day variation fee of $500. This fee will be in addition to any additional materials or labour required to complete the variation.';
+
+export function ClientView({
+  shortcode,
+  urgency,
+}: {
+  shortcode: string;
+  urgency: Urgency;
+}) {
   const [action, setAction] = useState<'idle' | 'approve' | 'edit' | 'decline'>(
     'idle'
   );
   const [loading, setLoading] = useState(false);
+  const [acknowledgedSameDayFee, setAcknowledgedSameDayFee] = useState(false);
   const [message, setMessage] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  const isSameDay = urgency === 'same_day';
+  const canApprove = !isSameDay || acknowledgedSameDayFee;
 
   async function handleApprove() {
     setAction('approve');
     setLoading(true);
     setMessage(null);
     try {
+      const body: { shortcode: string; acknowledgedSameDayFee?: boolean } = {
+        shortcode,
+      };
+      if (isSameDay) body.acknowledgedSameDayFee = true;
       const res = await fetch('/api/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shortcode }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok) {
@@ -60,6 +78,24 @@ export function ClientView({ shortcode }: { shortcode: string }) {
 
   return (
     <div className="mt-8 space-y-4">
+      {isSameDay && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <label className="flex cursor-pointer gap-3 text-sm text-slate-800">
+            <input
+              type="checkbox"
+              checked={acknowledgedSameDayFee}
+              onChange={(e) => setAcknowledgedSameDayFee(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
+            />
+            <span>{SAME_DAY_ACK_TEXT}</span>
+          </label>
+          {!acknowledgedSameDayFee && (
+            <p className="mt-2 text-xs text-amber-800">
+              Please acknowledge the same day fee above to approve.
+            </p>
+          )}
+        </div>
+      )}
       <p className="text-sm font-medium text-slate-700">
         Please approve, request edits, or decline:
       </p>
@@ -78,7 +114,7 @@ export function ClientView({ shortcode }: { shortcode: string }) {
         <button
           type="button"
           onClick={handleApprove}
-          disabled={loading}
+          disabled={loading || !canApprove}
           className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50"
         >
           {loading && action === 'approve' ? 'Approving…' : 'Approve variation'}
