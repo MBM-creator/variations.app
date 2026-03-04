@@ -27,6 +27,15 @@ function urgencyLabel(u: Urgency): string {
   return map[u] ?? u;
 }
 
+/** Format an ISO timestamp for display in Melbourne time. */
+function formatMelbourneTime(isoString: string): string {
+  return new Date(isoString).toLocaleString('en-AU', {
+    timeZone: 'Australia/Melbourne',
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}
+
 /** Email client when supervisor submits a variation. */
 export async function sendClientVariationEmail(params: {
   clientEmail: string;
@@ -91,7 +100,7 @@ export async function sendSteveApprovedEmail(params: {
   <p><strong>Description:</strong></p>
   <p>${params.description.replace(/\n/g, '<br>')}</p>
   <p><strong>Urgency:</strong> ${urgencyLabel(params.urgency)}</p>
-  <p><strong>Approved at:</strong> ${params.approvalTimestamp}</p>
+  <p><strong>Approved at:</strong> ${formatMelbourneTime(params.approvalTimestamp)}</p>
   <p><strong>Approval IP:</strong> ${params.approvalIp ?? '—'}</p>
   <p><strong>Images:</strong> ${params.imageCount}</p>
   <p><a href="${params.adminLink}" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View full record</a></p>
@@ -130,7 +139,7 @@ export async function sendSteveEditedEmail(params: {
   <p>${params.supervisorDescription.replace(/\n/g, '<br>')}</p>
   <p><strong>Client description:</strong></p>
   <p>${params.editNotes.replace(/\n/g, '<br>')}</p>
-  <p><strong>Edited at:</strong> ${params.editTimestamp}</p>
+  <p><strong>Edited at:</strong> ${formatMelbourneTime(params.editTimestamp)}</p>
   <p><strong>Edit IP:</strong> ${params.editIp ?? '—'}</p>
   <p><strong>Additional images:</strong> ${params.addedImageCount}</p>
   <p><a href="${params.adminLink}" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View full record</a></p>
@@ -167,7 +176,7 @@ export async function sendSteveDeclinedEmail(params: {
   <p><strong>Supervisor:</strong> ${params.supervisorName}</p>
   <p><strong>Description:</strong></p>
   <p>${params.description.replace(/\n/g, '<br>')}</p>
-  <p><strong>Declined at:</strong> ${params.approvalTimestamp}</p>
+  <p><strong>Declined at:</strong> ${formatMelbourneTime(params.approvalTimestamp)}</p>
   <p><strong>IP:</strong> ${params.approvalIp ?? '—'}</p>
   <p><a href="${params.adminLink}" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View full record</a></p>
   <p style="color: #666; font-size: 12px;">Ref: ${params.shortcode}</p>
