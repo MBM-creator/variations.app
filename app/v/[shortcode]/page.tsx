@@ -77,12 +77,31 @@ export default async function VariationViewPage({
       </p>
 
       <div className="mt-6 space-y-4">
-        <div>
-          <span className="text-sm font-medium text-slate-500">Description</span>
-          <p className="mt-1 whitespace-pre-wrap text-slate-800">
-            {variation.description}
-          </p>
-        </div>
+        {variation.status === 'edited' ? (
+          <>
+            <div>
+              <span className="text-sm font-medium text-slate-500">Supervisor&apos;s Description</span>
+              <p className="mt-1 whitespace-pre-wrap text-slate-800">
+                {variation.description}
+              </p>
+            </div>
+            {variation.edit_notes && (
+              <div>
+                <span className="text-sm font-medium text-slate-500">Client Description</span>
+                <p className="mt-1 whitespace-pre-wrap text-slate-800">
+                  {variation.edit_notes}
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div>
+            <span className="text-sm font-medium text-slate-500">Description</span>
+            <p className="mt-1 whitespace-pre-wrap text-slate-800">
+              {variation.description}
+            </p>
+          </div>
+        )}
         <div>
           <span className="text-sm font-medium text-slate-500">Urgency</span>
           <p className="mt-1">

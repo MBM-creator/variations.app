@@ -43,7 +43,7 @@ export default async function EditPage({
         Request edit – {variation.site_name}
       </h1>
       <p className="mt-1 text-slate-600">
-        Update the description and/or add photos. Edit notes are required.
+        Update the client description and/or add photos.
       </p>
       <EditForm
         shortcode={shortcode}

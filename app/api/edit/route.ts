@@ -14,12 +14,11 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request);
     const formData = await request.formData();
     const shortcode = formData.get('shortcode') as string;
-    const description = formData.get('description') as string;
     const editNotes = formData.get('edit_notes') as string;
 
-    if (!shortcode?.trim() || !description?.trim() || !editNotes?.trim()) {
+    if (!shortcode?.trim() || !editNotes?.trim()) {
       return NextResponse.json(
-        { error: 'Missing shortcode, description, or edit notes' },
+        { error: 'Missing shortcode or client description' },
         { status: 400 }
       );
     }
@@ -77,7 +76,6 @@ export async function POST(request: NextRequest) {
         edit_timestamp: now,
         edit_ip: ip,
         edit_notes: editNotes.trim(),
-        description: description.trim(),
       })
       .eq('id', row.id);
 
@@ -92,8 +90,7 @@ export async function POST(request: NextRequest) {
     await sendSteveEditedEmail({
       siteName: row.site_name,
       shortcode: row.shortcode,
-      originalDescription: row.description,
-      editedDescription: description.trim(),
+      supervisorDescription: row.description,
       editNotes: editNotes.trim(),
       editTimestamp: now,
       editIp: ip,
