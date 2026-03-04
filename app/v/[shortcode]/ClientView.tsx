@@ -18,12 +18,11 @@ export function ClientView({
   );
   const [loading, setLoading] = useState(false);
   const [acknowledgedSameDayFee, setAcknowledgedSameDayFee] = useState(false);
-  const [acknowledgedRequestEdit, setAcknowledgedRequestEdit] = useState(false);
   const [message, setMessage] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   const isSameDay = urgency === 'same_day';
   const canApprove = !isSameDay || acknowledgedSameDayFee;
-  const canRequestEdit = acknowledgedRequestEdit;
+  const canRequestEdit = !isSameDay || acknowledgedSameDayFee;
 
   async function handleApprove() {
     setAction('approve');
@@ -93,22 +92,11 @@ export function ClientView({
           </label>
           {!acknowledgedSameDayFee && (
             <p className="mt-2 text-xs text-amber-800">
-              Please acknowledge the same day fee above to approve.
+              Please acknowledge the same day fee above to approve or request edits.
             </p>
           )}
         </div>
       )}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <label className="flex cursor-pointer gap-3 text-sm text-slate-800">
-          <input
-            type="checkbox"
-            checked={acknowledgedRequestEdit}
-            onChange={(e) => setAcknowledgedRequestEdit(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
-          />
-          <span>I acknowledge I am requesting changes</span>
-        </label>
-      </div>
       <p className="text-sm font-medium text-slate-700">
         Please approve, request edits, or decline:
       </p>

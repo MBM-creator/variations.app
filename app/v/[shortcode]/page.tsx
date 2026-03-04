@@ -59,7 +59,7 @@ export default async function VariationViewPage({
   const { variation, signedUrls } = data;
   const submittedAt = new Date(variation.submitted_at).toLocaleString(
     'en-AU',
-    { dateStyle: 'medium', timeStyle: 'short' }
+    { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Australia/Melbourne' }
   );
 
   return (
