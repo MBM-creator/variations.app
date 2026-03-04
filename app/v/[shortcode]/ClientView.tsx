@@ -18,10 +18,12 @@ export function ClientView({
   );
   const [loading, setLoading] = useState(false);
   const [acknowledgedSameDayFee, setAcknowledgedSameDayFee] = useState(false);
+  const [acknowledgedRequestEdit, setAcknowledgedRequestEdit] = useState(false);
   const [message, setMessage] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   const isSameDay = urgency === 'same_day';
   const canApprove = !isSameDay || acknowledgedSameDayFee;
+  const canRequestEdit = acknowledgedRequestEdit;
 
   async function handleApprove() {
     setAction('approve');
@@ -96,6 +98,17 @@ export function ClientView({
           )}
         </div>
       )}
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <label className="flex cursor-pointer gap-3 text-sm text-slate-800">
+          <input
+            type="checkbox"
+            checked={acknowledgedRequestEdit}
+            onChange={(e) => setAcknowledgedRequestEdit(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
+          />
+          <span>I acknowledge I am requesting changes</span>
+        </label>
+      </div>
       <p className="text-sm font-medium text-slate-700">
         Please approve, request edits, or decline:
       </p>
@@ -120,12 +133,12 @@ export function ClientView({
           {loading && action === 'approve' ? 'Approving…' : 'Approve variation'}
         </button>
         <a
-          href={loading ? '#' : `/v/${shortcode}/edit`}
-          className={`rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 ${
-            loading ? 'pointer-events-none opacity-60' : 'hover:bg-slate-50'
+          href={loading || !canRequestEdit ? '#' : `/v/${shortcode}/edit`}
+          className={`rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 ${
+            loading || !canRequestEdit ? 'pointer-events-none opacity-60' : 'hover:bg-slate-50'
           }`}
-          aria-disabled={loading}
-          onClick={loading ? (e) => e.preventDefault() : undefined}
+          aria-disabled={loading || !canRequestEdit}
+          onClick={loading || !canRequestEdit ? (e) => e.preventDefault() : undefined}
         >
           Request edit
         </a>

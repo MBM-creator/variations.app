@@ -60,20 +60,12 @@ export function EditForm({
       )}
 
       <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-slate-700"
-        >
-          Description (editable) *
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          defaultValue={currentDescription}
-          rows={4}
-          required
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-        />
+        <span className="block text-sm font-medium text-slate-700">
+          Supervisor&apos;s Description
+        </span>
+        <p className="mt-1 whitespace-pre-wrap rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-slate-800">
+          {currentDescription}
+        </p>
       </div>
 
       <div>
@@ -81,7 +73,7 @@ export function EditForm({
           htmlFor="edit_notes"
           className="block text-sm font-medium text-slate-700"
         >
-          Edit notes (required) *
+          Client Description *
         </label>
         <textarea
           id="edit_notes"

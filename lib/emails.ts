@@ -49,8 +49,8 @@ export async function sendClientVariationEmail(params: {
   <p>${description.replace(/\n/g, '<br>')}</p>
   <p><strong>Urgency:</strong> ${urgencyLabel(urgency)}</p>
 ${urgency === 'same_day' ? `
-  <p style="margin: 1em 0;"><input type="checkbox" disabled style="vertical-align: middle; margin-right: 6px;"> I acknowledge this variation requires additional or different materials to allow work to proceed and will incur a same day variation fee of $500. This fee will be in addition to any additional materials or labour required to complete the variation.</p>
-  <p style="margin: 0 0 1em 0; font-size: 14px; color: #666;">You will be asked to confirm this when you approve.</p>
+  <p style="margin: 1em 0;">I acknowledge this variation requires additional or different materials to allow work to proceed and will incur a same day variation fee of $500. This fee will be in addition to any additional materials or labour required to complete the variation.</p>
+  <p style="margin: 0 0 1em 0; font-size: 14px;">You will be asked to confirm this when you approve.</p>
 ` : ''}
   <p>Please approve, request edits, or decline via the secure link below.</p>
   <p><a href="${viewLink}" style="display: inline-block; background: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View & respond</a></p>
@@ -111,8 +111,7 @@ export async function sendSteveApprovedEmail(params: {
 export async function sendSteveEditedEmail(params: {
   siteName: string;
   shortcode: string;
-  originalDescription: string;
-  editedDescription: string;
+  supervisorDescription: string;
   editNotes: string;
   editTimestamp: string;
   editIp: string | null;
@@ -127,11 +126,9 @@ export async function sendSteveEditedEmail(params: {
 <body style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <h2 style="color: #166534;">Variation Edited – Review Required</h2>
   <p><strong>Site:</strong> ${params.siteName}</p>
-  <p><strong>Original description:</strong></p>
-  <p>${params.originalDescription.replace(/\n/g, '<br>')}</p>
-  <p><strong>Edited description:</strong></p>
-  <p>${params.editedDescription.replace(/\n/g, '<br>')}</p>
-  <p><strong>Edit notes:</strong></p>
+  <p><strong>Supervisor&apos;s description:</strong></p>
+  <p>${params.supervisorDescription.replace(/\n/g, '<br>')}</p>
+  <p><strong>Client description:</strong></p>
   <p>${params.editNotes.replace(/\n/g, '<br>')}</p>
   <p><strong>Edited at:</strong> ${params.editTimestamp}</p>
   <p><strong>Edit IP:</strong> ${params.editIp ?? '—'}</p>
