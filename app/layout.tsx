@@ -12,9 +12,19 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: 'Variations – Made By Mobbs',
   description: 'Submit and approve variation requests',
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icons/192", sizes: "192x192", type: "image/png" },
+      { url: "/icons/512", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/icons/192",
+    apple: [{ url: "/icons/192", sizes: "192x192", type: "image/png" }],
+  },
+
 };
 
-export const viewport = { themeColor: '#166534' };
+export const viewport = { themeColor: '#003923' };
 
 export default function RootLayout({
   children,
